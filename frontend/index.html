@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f9fc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+        }
+        .upload-box {
+            border: 2px dashed #aaa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            background: white;
+            width: 300px;
+        }
+        input[type="file"] {
+            margin-top: 10px;
+        }
+        img {
+            max-width: 100%;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+<h1>Image Analyzer</h1>
+<div class="upload-box">
+    <p>Select an image to analyze</p>
+    <input type="file" id="fileInput" accept="image/*" />
+    <img id="preview" src="" alt="" />
+</div>
+
+<script>
+    const fileInput = document.getElementById("fileInput");
+    const preview = document.getElementById("preview");
+
+    fileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+</body>
+</html>
