@@ -1,63 +1,815 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Image Analyzer</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f6f9fc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        h1 {
-            color: #333;
-        }
-        .upload-box {
-            border: 2px dashed #aaa;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            background: white;
-            width: 300px;
-        }
-        input[type="file"] {
-            margin-top: 10px;
-        }
-        img {
-            max-width: 100%;
-            margin-top: 15px;
-            border-radius: 8px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Analyzer - AI Powered</title>
+  <style>
+    :root {
+      --primary-color: #007bff;
+      --secondary-color: #6c757d;
+      --success-color: #28a745;
+      --error-color: #dc3545;
+      --warning-color: #ffc107;
+      --bg-light: #f8f9fa;
+      --border-radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 40px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      margin: 20px 0;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--secondary-color);
+      margin-bottom: 30px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .upload-section {
+      margin-bottom: 20px;
+    }
+
+    .upload-box {
+      border: 2px dashed var(--secondary-color);
+      border-radius: var(--border-radius);
+      padding: 40px 30px;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .upload-box:hover {
+      border-color: var(--primary-color);
+      background-color: #f0f8ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+    }
+
+    .upload-box.disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .upload-box.disabled:hover {
+      transform: none;
+      border-color: var(--secondary-color);
+      background-color: #fafafa;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .instruction-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--secondary-color);
+      padding: 10px;
+    }
+
+    .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .instruction-text {
+      font-size: 16px;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .instruction-subtext {
+      font-size: 12px;
+      color: #999;
+    }
+
+    #preview-container {
+      display: none;
+      text-align: center;
+    }
+
+    #preview {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      display: block;
+      margin: 0 auto 15px;
+      max-height: 300px;
+      object-fit: contain;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #progress-container {
+      width: 100%;
+      height: 10px;
+      background-color: #e9ecef;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 15px;
+      display: none;
+    }
+
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary-color), #0056b3);
+      transition: width 0.3s ease;
+    }
+
+    .status-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    #status-message {
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .status-uploading {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    .status-analyzing {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .status-error {
+      background-color: #f8d7da;
+      color: var(--error-color);
+      border: 1px solid #f5c6cb;
+    }
+
+    .status-success {
+      background-color: #d4edda;
+      color: var(--success-color);
+      border: 1px solid #c3e6cb;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid currentColor;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #results-container {
+      margin-top: 30px;
+      display: none;
+      animation: fadeIn 0.5s;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .results-header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--bg-light);
+    }
+
+    .results-header h2 {
+      color: #333;
+      font-size: 22px;
+      margin: 0 0 5px 0;
+    }
+
+    .results-header p {
+      color: var(--secondary-color);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .results-section {
+      margin-bottom: 25px;
+      background: #fafafa;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .results-section h3 {
+      color: #333;
+      font-size: 18px;
+      margin: 0 0 15px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-icon {
+      font-size: 22px;
+    }
+
+    .label-item,
+    .face-item {
+      background: white;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+
+    .label-item:hover,
+    .face-item:hover {
+      transform: translateX(5px);
+    }
+
+    .label-name {
+      font-weight: 500;
+      color: #333;
+      font-size: 15px;
+    }
+
+    .confidence-badge {
+      background: var(--primary-color);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .face-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .face-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .face-detail {
+      font-weight: 600;
+      color: #333;
+      font-size: 15px;
+    }
+
+    .face-attributes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      width: 100%;
+      font-size: 13px;
+    }
+
+    .attribute-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--secondary-color);
+    }
+
+    .attribute-icon {
+      font-size: 16px;
+    }
+
+    .emotion-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .emotion-label {
+      font-size: 12px;
+      color: var(--secondary-color);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .emotion-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .emotion-tag {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .no-results {
+      text-align: center;
+      color: var(--secondary-color);
+      font-style: italic;
+      padding: 30px;
+      font-size: 14px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .reset-button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex: 1;
+    }
+
+    .reset-button:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+
+    .summary-stats {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 120px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--secondary-color);
+      margin-top: 5px;
+      font-weight: 500;
+    }
+  </style>
 </head>
+
 <body>
-<h1>Image Analyzer</h1>
-<div class="upload-box">
-    <p>Select an image to analyze</p>
-    <input type="file" id="fileInput" accept="image/*" />
-    <img id="preview" src="" alt="" />
-</div>
+  <div class="container">
+    <h1>🖼️ AI Image Analyzer</h1>
+    <p class="subtitle">
+      Upload an image to detect objects, scenes, and faces using AWS Rekognition<br>
+      Powered by Amazon Web Services
+    </p>
 
-<script>
+    <div class="upload-section">
+      <label for="fileInput" class="upload-box" id="uploadBox">
+        <div id="instruction" class="instruction-content">
+          <span class="icon">📤</span>
+          <p class="instruction-text">Click to upload or drag an image here</p>
+          <p class="instruction-subtext">Supported: JPG, PNG, GIF • Max 5MB</p>
+        </div>
+        <div id="preview-container">
+          <img id="preview" src="" alt="Image preview" />
+        </div>
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/gif" />
+      </label>
+
+      <div id="progress-container">
+        <div id="progress-bar"></div>
+      </div>
+
+      <div class="status-container">
+        <div id="status-message"></div>
+      </div>
+    </div>
+
+    <div id="results-container">
+      <div class="results-header">
+        <h2>✨ Analysis Results</h2>
+        <p id="analysis-timestamp"></p>
+      </div>
+
+      <div class="summary-stats">
+        <div class="stat-card">
+          <div class="stat-number" id="label-count">0</div>
+          <div class="stat-label">Labels Detected</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="face-count">0</div>
+          <div class="stat-label">Faces Found</div>
+        </div>
+      </div>
+
+      <div class="results-section">
+        <h3><span class="section-icon">🏷️</span> Detected Labels</h3>
+        <div id="labels-list"></div>
+      </div>
+
+      <div class="results-section">
+        <h3><span class="section-icon">👤</span> Face Analysis</h3>
+        <div id="faces-list"></div>
+      </div>
+
+      <div class="button-group">
+        <button class="reset-button" onclick="resetUpload()">📸 Analyze Another Image</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ⚠️ IMPORTANT: Update these URLs with your actual API Gateway endpoints
+    const API_UPLOAD_URL = "https://ecp0de3j41.execute-api.us-east-2.amazonaws.com/prod/upload";
+    const API_RESULTS_URL = "https://ecp0de3j41.execute-api.us-east-2.amazonaws.com/prod/results";
+
     const fileInput = document.getElementById("fileInput");
+    const uploadBox = document.getElementById("uploadBox");
+    const instruction = document.getElementById("instruction");
+    const previewContainer = document.getElementById("preview-container");
     const preview = document.getElementById("preview");
+    const progressContainer = document.getElementById("progress-container");
+    const progressBar = document.getElementById("progress-bar");
+    const statusMessage = document.getElementById("status-message");
+    const resultsContainer = document.getElementById("results-container");
 
-    fileInput.addEventListener("change", (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
+    let isUploading = false;
+
+    function showStatus(message, type, showSpinner = false) {
+      statusMessage.innerHTML = showSpinner
+        ? `<span class="spinner"></span>${message}`
+        : message;
+      statusMessage.className = `status-${type}`;
+      statusMessage.style.display = "flex";
+    }
+
+    function hideStatus() {
+      statusMessage.style.display = "none";
+    }
+
+    function setUploadBoxState(disabled) {
+      isUploading = disabled;
+      if (disabled) {
+        uploadBox.classList.add('disabled');
+        fileInput.disabled = true;
+      } else {
+        uploadBox.classList.remove('disabled');
+        fileInput.disabled = false;
+      }
+    }
+
+    function resetUpload() {
+      instruction.style.display = "flex";
+      previewContainer.style.display = "none";
+      progressContainer.style.display = "none";
+      resultsContainer.style.display = "none";
+      hideStatus();
+      progressBar.style.width = "0%";
+      fileInput.value = "";
+      setUploadBoxState(false);
+
+      // Clear results
+      document.getElementById("labels-list").innerHTML = "";
+      document.getElementById("faces-list").innerHTML = "";
+      document.getElementById("label-count").textContent = "0";
+      document.getElementById("face-count").textContent = "0";
+    }
+
+    fileInput.addEventListener("change", async (event) => {
+      if (isUploading) return;
+
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Validation
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        showStatus("❌ Please upload a JPG, PNG, or GIF image", "error");
+        fileInput.value = "";
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showStatus("❌ File size must be less than 5MB", "error");
+        fileInput.value = "";
+        return;
+      }
+
+      // Show preview
+      instruction.style.display = "none";
+      previewContainer.style.display = "block";
+      preview.src = URL.createObjectURL(file);
+      resultsContainer.style.display = "none";
+      hideStatus();
+
+      // Start upload
+      await uploadFile(file);
     });
-</script>
+
+    async function uploadFile(file) {
+      try {
+        setUploadBoxState(true);
+        progressContainer.style.display = "block";
+        progressBar.style.width = "30%";
+        showStatus("⬆️ Uploading image...", "uploading", true);
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const response = await fetch(API_UPLOAD_URL, {
+          method: "POST",
+          body: formData,
+        });
+
+        progressBar.style.width = "60%";
+
+        if (!response.ok) {
+          let errorMsg = `Upload failed (${response.status})`;
+          try {
+            const errorData = await response.json();
+            errorMsg = errorData.message || errorData.error || errorMsg;
+          } catch (e) {
+            console.error("Could not parse error response:", e);
+          }
+          throw new Error(errorMsg);
+        }
+
+        const data = await response.json();
+        console.log("Upload successful:", data);
+
+        progressBar.style.width = "100%";
+        showStatus("🔍 Analyzing image with AI...", "analyzing", true);
+
+        // Start polling for results
+        await pollForResults(data.key);
+
+      } catch (error) {
+        console.error("Upload error:", error);
+        progressContainer.style.display = "none";
+        showStatus(`❌ ${error.message}`, "error");
+        setUploadBoxState(false);
+
+        setTimeout(() => {
+          resetUpload();
+        }, 3000);
+      }
+    }
+
+    async function pollForResults(imageKey, attempt = 0) {
+      const maxAttempts = 15; // 30 seconds max (15 attempts × 2 seconds)
+      const pollInterval = 2000; // 2 seconds
+
+      if (attempt >= maxAttempts) {
+        showStatus("⏱️ Analysis is taking longer than expected. The results may appear later.", "error");
+        setUploadBoxState(false);
+        progressContainer.style.display = "none";
+        return;
+      }
+
+      try {
+        console.log(`Polling attempt ${attempt + 1}/${maxAttempts} for ${imageKey}`);
+
+        const response = await fetch(`${API_RESULTS_URL}?imageKey=${encodeURIComponent(imageKey)}`);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Analysis results received:", data);
+
+          progressContainer.style.display = "none";
+          displayResults(data.data);
+          showStatus("✅ Analysis complete!", "success");
+
+          setTimeout(() => {
+            hideStatus();
+          }, 3000);
+
+          setUploadBoxState(false);
+
+        } else if (response.status === 404) {
+          // Results not ready yet, continue polling
+          console.log("Results not ready, polling again...");
+          setTimeout(() => pollForResults(imageKey, attempt + 1), pollInterval);
+
+        } else {
+          // Other error
+          let errorMsg = "Failed to retrieve analysis results";
+          try {
+            const errorData = await response.json();
+            errorMsg = errorData.message || errorData.error || errorMsg;
+          } catch (e) {
+            console.error("Could not parse error response:", e);
+          }
+          throw new Error(errorMsg);
+        }
+
+      } catch (error) {
+        console.error("Polling error:", error);
+        progressContainer.style.display = "none";
+        showStatus(`❌ ${error.message}`, "error");
+        setUploadBoxState(false);
+      }
+    }
+
+    function displayResults(analysis) {
+      if (!analysis) {
+        showStatus("❌ No analysis data received", "error");
+        return;
+      }
+
+      resultsContainer.style.display = "block";
+
+      // Set timestamp
+      const timestamp = new Date(analysis.timestamp).toLocaleString();
+      document.getElementById("analysis-timestamp").textContent = `Analyzed on ${timestamp}`;
+
+      // Update summary stats
+      const labelCount = analysis.labels?.length || 0;
+      const faceCount = analysis.faceCount || 0;
+
+      document.getElementById("label-count").textContent = labelCount;
+      document.getElementById("face-count").textContent = faceCount;
+
+      // Display labels
+      const labelsList = document.getElementById("labels-list");
+      if (labelCount > 0) {
+        labelsList.innerHTML = analysis.labels
+          .map(label => `
+            <div class="label-item">
+              <span class="label-name">${label.name}</span>
+              <span class="confidence-badge">${label.confidence}%</span>
+            </div>
+          `).join('');
+      } else {
+        labelsList.innerHTML = '<div class="no-results">🔍 No labels detected in this image</div>';
+      }
+
+      // Display faces
+      const facesList = document.getElementById("faces-list");
+      if (faceCount > 0 && analysis.faces) {
+        facesList.innerHTML = analysis.faces
+          .map((face, index) => `
+            <div class="face-item">
+              <div class="face-header">
+                <span class="face-detail">Face ${index + 1}</span>
+                <span class="confidence-badge">${face.confidence}%</span>
+              </div>
+              <div class="face-attributes">
+                <div class="attribute-item">
+                  <span class="attribute-icon">👤</span>
+                  <span>Gender: ${face.gender || 'Unknown'}</span>
+                </div>
+                <div class="attribute-item">
+                  <span class="attribute-icon">🎂</span>
+                  <span>Age: ${face.ageRange ? `${face.ageRange.Low}-${face.ageRange.High}` : 'Unknown'}</span>
+                </div>
+                <div class="attribute-item">
+                  <span class="attribute-icon">😊</span>
+                  <span>Smile: ${face.smile ? 'Yes' : 'No'}</span>
+                </div>
+                <div class="attribute-item">
+                  <span class="attribute-icon">👓</span>
+                  <span>Eyeglasses: ${face.eyeglasses ? 'Yes' : 'No'}</span>
+                </div>
+                <div class="attribute-item">
+                  <span class="attribute-icon">🕶️</span>
+                  <span>Sunglasses: ${face.sunglasses ? 'Yes' : 'No'}</span>
+                </div>
+              </div>
+              ${face.emotions && face.emotions.length > 0 ? `
+                <div class="emotion-section">
+                  <div class="emotion-label">Top Emotions:</div>
+                  <div class="emotion-list">
+                    ${face.emotions.map(e =>
+            `<span class="emotion-tag">${e.type} ${e.confidence}%</span>`
+          ).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `).join('');
+      } else {
+        facesList.innerHTML = '<div class="no-results">👤 No faces detected in this image</div>';
+      }
+
+      // Scroll to results
+      resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Drag and drop handlers
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      uploadBox.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      uploadBox.addEventListener(eventName, () => {
+        if (!isUploading) {
+          uploadBox.style.borderColor = 'var(--primary-color)';
+          uploadBox.style.backgroundColor = '#f0f8ff';
+        }
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      uploadBox.addEventListener(eventName, () => {
+        uploadBox.style.borderColor = 'var(--secondary-color)';
+        uploadBox.style.backgroundColor = '#fafafa';
+      }, false);
+    });
+
+    uploadBox.addEventListener('drop', (e) => {
+      if (isUploading) return;
+
+      const files = e.dataTransfer.files;
+      if (files.length) {
+        fileInput.files = files;
+        fileInput.dispatchEvent(new Event('change'));
+      }
+    }, false);
+  </script>
 </body>
+
 </html>
