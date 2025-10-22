@@ -1,7 +1,13 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { RekognitionClient, DetectLabelsCommand, DetectFacesCommand } from "@aws-sdk/client-rekognition";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from "uuid";
 
 const s3Client = new S3Client({ region: "us-east-2" });
+const rekognitionClient = new RekognitionClient({ region: "us-east-2" });
+const dynamoClient = new DynamoDBClient({ region: "us-east-2" });
+const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 function extractBoundary(contentType) {
   const match = contentType.match(/boundary=(.+)$/);
@@ -94,7 +100,7 @@ export const handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "https://d2tvtylprn3gax.cloudfront.net",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
   };
 
   try {
