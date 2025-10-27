@@ -150,3 +150,70 @@ if (document.readyState === 'loading') {
 } else {
   populateLanguageSelects();
 }
+
+/**
+ * Text-to-Speech via Amazon Polly
+ */
+async function speakTranslatedText() {
+  const text = document.getElementById('translated-text').textContent.trim();
+  if (!text) return;
+
+  const targetLang = document.getElementById('target-language').value || 'en';
+
+  const speakBtn = document.getElementById('speak-button');
+  const audioEl = document.getElementById('tts-audio');
+
+  speakBtn.disabled = true;
+  const original = speakBtn.textContent;
+  speakBtn.textContent = 'Synthesizing...';
+
+  try {
+    const res = await fetch(API_CONFIG.SPEAK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        languageCode: targetLang
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data?.message || data?.error || 'TTS failed');
+    }
+
+    const mime = data.contentType || 'audio/mpeg';
+    const binary = atob(data.audioBase64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mime });
+    const url = URL.createObjectURL(blob);
+
+    audioEl.src = url;
+    audioEl.style.display = 'block';
+    audioEl.play().catch(() => {/* autoplay may be blocked; user can press play */});
+  } catch (err) {
+    console.error(err);
+    showTranslateStatus?.(`❌ ${err.message || 'TTS error'}`, 'error');
+    alert('Text-to-Speech failed: ' + (err.message || 'Unknown error'));
+  } finally {
+    speakBtn.textContent = original;
+    speakBtn.disabled = false;
+  }
+}
+
+// Wire up after the DOM is ready
+(function () {
+  function attach() {
+    const btn = document.getElementById('speak-button');
+    if (btn && !btn.dataset.bound) {
+      btn.addEventListener('click', speakTranslatedText);
+      btn.dataset.bound = '1';
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attach);
+  } else {
+    attach();
+  }
+})();

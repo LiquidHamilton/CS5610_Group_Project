@@ -7,7 +7,8 @@
 const API_CONFIG = {
   UPLOAD_URL: "https://ecp0de3j41.execute-api.us-east-2.amazonaws.com/prod/upload",
   RESULTS_URL: "https://ecp0de3j41.execute-api.us-east-2.amazonaws.com/prod/results",
-  TRANSLATE_URL: "https://ecp0de3j41.execute-api.us-east-2.amazonaws.com/prod/translate"
+  TRANSLATE_URL: "https://ecp0de3j41.execute-api.us-east-2.amazonaws.com/prod/translate",
+  SPEAK_URL: "https://ecp0de3j41.execute-api.us-east-2.amazonaws.com/prod/speak"
 };
 
 // Amazon Cognito Configuration
