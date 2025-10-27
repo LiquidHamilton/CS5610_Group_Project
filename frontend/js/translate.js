@@ -192,11 +192,11 @@ async function speakTranslatedText() {
     audioEl.src = url;
     audioEl.style.display = 'block';
     audioEl.play().catch(() => {/* autoplay may be blocked; user can press play */});
-  } catch (err) {
-    console.error(err);
-    showTranslateStatus?.(`❌ ${err.message || 'TTS error'}`, 'error');
-    alert('Text-to-Speech failed: ' + (err.message || 'Unknown error'));
-  } finally {
+    } catch (err) {
+      console.error(err);
+      alert('Text-to-Speech failed: ' + (err?.message || 'Unknown error'));
+    } finally {
+
     speakBtn.textContent = original;
     speakBtn.disabled = false;
   }
