@@ -293,31 +293,6 @@ Amazon Translate
     ↓
 Translated text returned to user
 ```
-
-## Key Technical Decisions
-
-### Multipart Form-Data Parsing
-- **Challenge**: API Gateway doesn't natively parse multipart/form-data
-- **Solution**: Custom binary buffer parsing in Lambda
-- **Implementation**: Direct buffer manipulation to extract image bytes
-- **Configuration**: Binary Media Types enabled in API Gateway
-
-### DynamoDB Schema
-- **Partition Key Only**: `imageKey` (String)
-- **No Sort Key**: Simplified queries using GetItem
-- **TTL**: 30-day automatic cleanup to manage Free Tier storage
-
-### Results Fetching Strategy
-- **Wait Time**: 4 seconds (Rekognition typically takes 2-4 seconds)
-- **Requests**: Single GET request to /results endpoint
-- **Fallback**: Error message if results not ready
-- **Note**: Simplified from 15-attempt polling to improve code maintainability
-
-### Image Validation
-- **Magic Number Detection**: Validates actual file format (not just extension)
-- **Size Limits**: 5MB max (enforced in frontend and backend)
-- **Supported Formats**: JPEG (ffd8ff), PNG (89504e47), GIF (47494638)
-
 ## API Endpoints
 
 ### POST /upload
@@ -436,43 +411,9 @@ After making changes to API:
 - [x] Refactor to modular code structure ✅
 - [x] Simplify polling logic for better maintainability ✅
 
-## Future Enhancements
-
-### Potential Features
-- [ ] Implement image history/gallery per user
-- [ ] Add text detection (DetectText)
-- [ ] Add celebrity recognition
-- [ ] Implement unsafe content filtering (Rekognition Content Moderation)
-- [ ] Add image comparison feature
-- [ ] Export results as PDF/JSON
-- [ ] Add usage analytics dashboard
-- [ ] Implement rate limiting per user
-- [ ] Add image thumbnail generation
-- [ ] Add forgot password functionality
-- [ ] Implement user profile management
-
-### Optimization Ideas
-- [ ] Implement CloudFront edge caching for API
-- [ ] Add Lambda function versions/aliases
-- [ ] Set up CI/CD pipeline
-- [ ] Add automated testing suite
-- [ ] Implement blue-green deployment
-- [ ] Add X-Ray tracing for debugging
-
 ## Troubleshooting
 
 ### Common Issues
-
-**Issue**: Images appear corrupted in S3
-**Solution**: Ensure API Gateway has binary media types configured (`multipart/form-data`, `*/*`)
-
-**Issue**: Results request returns 404
-**Solution**:
-- Wait 4 seconds for Rekognition to process
-- Check S3 trigger is configured
-- Verify Rekognition Lambda has correct permissions
-- Check CloudWatch logs for Lambda errors
-
 **Issue**: CloudFront shows old content
 **Solution**: Create invalidation for `/*` or specific paths like `/js/upload.js`
 
@@ -481,9 +422,6 @@ After making changes to API:
 - Create OPTIONS method with Lambda proxy integration (not Mock)
 - Ensure Lambda returns CORS headers in OPTIONS response
 - For authenticated endpoints, include "Authorization" in Access-Control-Allow-Headers
-
-**Issue**: Authentication fails with "SECRET_HASH" error
-**Solution**: Use SPA app client type (no client secret) instead of Traditional Web App
 
 **Issue**: Auto-login shows "Unknown" or "Loading..." email
 **Solution**: Get email from ID token payload (synchronous) instead of getUserAttributes (asynchronous)
@@ -505,20 +443,7 @@ After making changes to API:
 - **Cognito User Pool ID**: us-east-2_Wy27oxUwj
 - **Cognito App Client ID**: 3o5hol9k960itdbrlba7vs7e21
 
-## Success Metrics
-
-✅ **100% Functional** - All components working end-to-end
-✅ **Free Tier Compliant** - All resources within AWS Free Tier limits
-✅ **Production Ready** - Error handling, validation, and monitoring in place
-✅ **User Friendly** - Modern UI with drag-and-drop, progress indicators, and clear feedback
-✅ **Scalable** - Serverless architecture can handle increased load
-✅ **Secure** - User authentication with AWS Cognito, protected endpoints
-✅ **Multi-Service** - Uses 8 AWS services (S3, CloudFront, API Gateway, Lambda, Rekognition, DynamoDB, Cognito, Translate)
-✅ **Maintainable** - Modular code structure with separation of concerns
-
 ---
-
-**Project Initial Completion**: October 19, 2025
-**Authentication & Translation Added**: October 21, 2025
 **Status**: Production Ready ✅
+
 **AWS Services Used**: 8 (S3, CloudFront, API Gateway, Lambda, Rekognition, DynamoDB, Cognito, Translate)
